@@ -26,7 +26,7 @@ class User extends Model {
 				iss: new Date().getTime(),
 				exp: new Date().setTime(new Date().getTime() + 60 * 60 * 1000),
 			},
-			'hhh',
+			process.env.ACC_TOKEN_SEC,
 		);
 	}
 	generateRefreshToekn() {
@@ -38,7 +38,7 @@ class User extends Model {
 				iss: new Date().getTime(),
 				exp: new Date().setTime(new Date().getTime() + 200 * 60 * 60 * 1000),
 			},
-			'refhhh',
+			process.env.REF_TOKEN_SEC,
 		);
 	}
 

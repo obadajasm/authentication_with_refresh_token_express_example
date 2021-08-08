@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const sequelize = require('./util/database');
 const passport = require('passport');
@@ -20,8 +22,8 @@ User.associations({ Product });
 Product.associations({ User });
 
 sequelize
-	// .sync({ force: true })
-	.sync()
+	.sync({ force: true })
+	// .sync()
 	.then((result) => {
 		return User.findByPk(1);
 		// console.log(result);

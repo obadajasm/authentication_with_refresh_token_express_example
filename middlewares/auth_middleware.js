@@ -7,8 +7,8 @@ const LocalStrategy = require('passport-local').Strategy;
 const { User } = require('../model/user');
 
 let opts = {};
-opts.jwtFromRequest = ExtractJwt.fromHeader('authorization');
-opts.secretOrKey = 'hhh';
+opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
+opts.secretOrKey = process.env.ACC_TOKEN_SEC;
 exports.jwtPassportMiddleware = passport.use(
 	new Strategy(opts, async function (payload, done) {
 		try {

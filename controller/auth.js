@@ -40,7 +40,7 @@ exports.login = async (req, res, next) => {
 		if (req.body || req.body.refresh_token) {
 			const refresh_token = req.body.refresh_token;
 			try {
-				var decoded = jwt.verify(refresh_token, 'refhhh');
+				var decoded = jwt.verify(refresh_token, process.env.REF_TOKEN_SEC);
 
 				req.body.email = decoded.email;
 			} catch (err) {
