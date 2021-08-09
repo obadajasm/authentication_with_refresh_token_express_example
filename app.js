@@ -8,35 +8,29 @@ const { User } = require('./model/user');
 const { Product } = require('./model/product');
 const authRoutes = require('./routes/auth_routes');
 const PassportMiddleware = require('./middlewares/auth_middleware');
+
 const app = express();
+
 app.use(passport.initialize());
 app.use(express.json());
 
 PassportMiddleware.jwtPassportMiddleware;
 PassportMiddleware.loaclPassportMiddleware;
 
+///auth routes MUST come first
 app.use('/auth', authRoutes);
+///then JWT middleware
 app.use('/', passport.authenticate('jwt', { session: false }));
+////define your routes
 
 User.associations({ Product });
 Product.associations({ User });
 
 sequelize
-	.sync({ force: true })
-	// .sync()
-	.then((result) => {
-		return User.findByPk(1);
-		// console.log(result);
-	})
-	.then((user) => {
-		if (!user) {
-			return User.create({ name: 'Max', email: 'test@test.com', password: 'asdasdasd' });
-		}
-		return user;
-	})
-	.then((user) => {
-		// console.log(user);
+	// .sync({ force: true })
+	.sync()
 
+	.then(() => {
 		// console.log(user);
 		app.listen(3000);
 	})

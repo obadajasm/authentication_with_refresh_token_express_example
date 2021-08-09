@@ -5,16 +5,16 @@ const validator = require('validator');
 
 exports.signup = async (req, res) => {
 	if (!req.body || !req.body.email || !req.body.password) {
-		return res.status(401).json('email and password are required');
+		return res.status(400).json('Email and password are required');
 	}
 
 	if (!validator.isEmail(req.body.email)) {
-		return res.status(401).json('Invalid email');
+		return res.status(400).json('Invalid email');
 	}
 	if (req.body.password.toString().length <= 5) {
-		return res.status(401).json('Password is too short, 6 or more');
+		return res.status(400).json('Password is too short, 6 or more');
 	}
-	let isEx = await User.findOne({ where: { email: req.body.email } });
+	const isEx = await User.findOne({ where: { email: req.body.email } });
 
 	if (isEx) {
 		return res.status(401).json('use another email');
@@ -36,21 +36,23 @@ exports.signup = async (req, res) => {
 };
 
 exports.login = async (req, res, next) => {
-	try {
-		if (req.body || req.body.refresh_token) {
-			const refresh_token = req.body.refresh_token;
-			try {
-				var decoded = jwt.verify(refresh_token, process.env.REF_TOKEN_SEC);
+	if (!req.body) {
+		return res.status(400).json('Email and password, or Refresh token is requeired');
+	}
+	if (req.body.refresh_token) {
+		const refresh_token = req.body.refresh_token;
+		try {
+			var decoded = jwt.verify(refresh_token, process.env.REF_TOKEN_SEC);
 
-				req.body.email = decoded.email;
-			} catch (err) {
-				console.log(err);
-				// err
-			}
-		} else if (!req.body.email || !req.body.password) {
-			return res.status(401).json('email or password');
+			req.body.email = decoded.email;
+		} catch (err) {
+			console.log(err);
 		}
-
+	}
+	if (!req.body.email || !req.body.password) {
+		return res.status(401).json('missing email or password');
+	}
+	try {
 		const tempUser = await User.findOne({
 			where: {
 				email: req.body.email,
@@ -72,8 +74,8 @@ exports.login = async (req, res, next) => {
 				refresh_token: tempUser.generateRefreshToekn(),
 			});
 		}
-		return res.status(401).json('sorry');
+		return res.status(401).json();
 	} catch (error) {
-		return res.status(401).json(error);
+		return res.status(500).json(error);
 	}
 };

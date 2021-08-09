@@ -62,7 +62,11 @@ User.init(
 			type: Sequelize.STRING,
 		},
 		name: Sequelize.STRING,
-		email: Sequelize.STRING,
+		email: {
+			type: Sequelize.STRING,
+			allowNull: false,
+			unique: true,
+		},
 	},
 	{ sequelize },
 );
