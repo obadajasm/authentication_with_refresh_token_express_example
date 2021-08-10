@@ -1,9 +1,9 @@
-const { Sequelize, Model } = require('sequelize');
 const UserProduct = require('./user_product').UserProduct;
+const sequelize = require('../utils/database');
+const { Sequelize, Model } = require('sequelize');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const sequelize = require('../util/database');
 const PROTECTED_ATTRIBUTES = ['password', 'refresh_token'];
 class User extends Model {
 	toJSON(remove) {

@@ -1,11 +1,11 @@
 require('dotenv').config();
 
 const express = require('express');
-const sequelize = require('./util/database');
+const sequelize = require('./utils/database');
 const passport = require('passport');
 
-const { User } = require('./model/user');
-const { TokensBlacklist } = require('./model/blacklist_tokens');
+const { User } = require('./models/user');
+const { TokensBlacklist } = require('./models/blacklist_tokens');
 const authRoutes = require('./routes/auth_routes');
 const PassportMiddleware = require('./middlewares/auth_middleware');
 

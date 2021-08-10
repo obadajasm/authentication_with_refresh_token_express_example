@@ -1,12 +1,10 @@
-const { User } = require('../model/user');
-const { TokensBlacklist } = require('../model/blacklist_tokens');
+const { User } = require('../models/user');
+const { TokensBlacklist } = require('../models/blacklist_tokens');
 const jwt = require('jsonwebtoken');
-
 const cron = require('node-cron');
 const moment = require('moment');
-
 const validator = require('validator');
-const { Op, Sequelize } = require('sequelize');
+const { Op } = require('sequelize');
 
 exports.signup = async (req, res) => {
 	if (!req.body || !req.body.email || !req.body.password) {

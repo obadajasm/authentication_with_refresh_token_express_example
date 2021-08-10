@@ -1,10 +1,10 @@
-const passport = require('passport');
+const { User } = require('../models/user');
+const { TokensBlacklist } = require('../models/blacklist_tokens');
 
+const passport = require('passport');
 const { ExtractJwt, Strategy } = require('passport-jwt');
 const jwt = require('jsonwebtoken');
 const LocalStrategy = require('passport-local').Strategy;
-const { User } = require('../model/user');
-const { TokensBlacklist } = require('../model/blacklist_tokens');
 
 let opts = {};
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();

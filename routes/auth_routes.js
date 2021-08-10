@@ -1,8 +1,7 @@
+const authController = require('../controllers/auth');
+
 const express = require('express');
 const passport = require('passport');
-const loaclPassportMiddleware = require('../middlewares/auth_middleware').loaclPassportMiddleware;
-
-const authController = require('../controller/auth');
 
 const router = express.Router();
 
