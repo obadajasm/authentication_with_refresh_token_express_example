@@ -4,8 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const sequelize = require('../util/database');
-// const { Product } = require('./product');
-const PROTECTED_ATTRIBUTES = ['password'];
+const PROTECTED_ATTRIBUTES = ['password', 'refresh_token'];
 class User extends Model {
 	toJSON(remove) {
 		let attributes = Object.assign({}, this.get());
@@ -36,16 +35,13 @@ class User extends Model {
 				id: this.id,
 				email: this.email,
 				iss: new Date().getTime(),
-				exp: new Date().setTime(new Date().getTime() + 200 * 60 * 60 * 1000),
+				///expirr in one week
+				exp: new Date().setTime(new Date().getTime() + 168 * 60 * 60 * 1000),
 			},
 			process.env.REF_TOKEN_SEC,
 		);
 	}
 
-	async getAll() {
-		const res = await User.findAll();
-		return res;
-	}
 	async isUserPasswordValid(password) {
 		return await bcrypt.compare(password, this.password);
 	}
@@ -78,7 +74,8 @@ User.afterCreate(async (user, options) => {
 });
 
 User.associations = (models) => {
-	User.belongsToMany(models.Product, { through: UserProduct });
+	// User.belongsToMany(models.Product, { through: UserProduct });
+	User.hasMany(models.TokensBlacklist);
 };
 module.exports = {
 	User,

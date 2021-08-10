@@ -1,7 +1,12 @@
 const { User } = require('../model/user');
+const { TokensBlacklist } = require('../model/blacklist_tokens');
 const jwt = require('jsonwebtoken');
 
+const cron = require('node-cron');
+const moment = require('moment');
+
 const validator = require('validator');
+const { Op, Sequelize } = require('sequelize');
 
 exports.signup = async (req, res) => {
 	if (!req.body || !req.body.email || !req.body.password) {
@@ -36,20 +41,7 @@ exports.signup = async (req, res) => {
 };
 
 exports.login = async (req, res, next) => {
-	if (!req.body) {
-		return res.status(400).json('Email and password, or Refresh token is requeired');
-	}
-	if (req.body.refresh_token) {
-		const refresh_token = req.body.refresh_token;
-		try {
-			var decoded = jwt.verify(refresh_token, process.env.REF_TOKEN_SEC);
-
-			req.body.email = decoded.email;
-		} catch (err) {
-			console.log(err);
-		}
-	}
-	if (!req.body.email || !req.body.password) {
+	if (!req.body || !req.body.email || !req.body.password) {
 		return res.status(401).json('missing email or password');
 	}
 	try {
@@ -61,12 +53,8 @@ exports.login = async (req, res, next) => {
 		if (!tempUser) {
 			return res.status(401).json('didnt find');
 		}
-		let ispasswordMatch = false;
-		if (req.body.password) {
-			ispasswordMatch = await tempUser.isUserPasswordValid(req.body.password);
-		} else if (req.body.refresh_token) {
-			ispasswordMatch = true;
-		}
+
+		const ispasswordMatch = await tempUser.isUserPasswordValid(req.body.password);
 		if (ispasswordMatch) {
 			return res.status(200).json({
 				user: tempUser.toJSON(true),
@@ -79,3 +67,77 @@ exports.login = async (req, res, next) => {
 		return res.status(500).json(error);
 	}
 };
+
+exports.refreshToken = async (req, res, next) => {
+	console.log('sss');
+	if (!req.body || !req.body.refresh_token) {
+		return res.status(400).json('Refresh token is requeired');
+	}
+	const refresh_token = req.body.refresh_token;
+	try {
+		var decoded = jwt.verify(refresh_token, process.env.REF_TOKEN_SEC);
+		req.body.id = decoded.id;
+	} catch (err) {
+		console.log(err);
+		return res.status(400).json('Invalid Refresh token');
+	}
+
+	try {
+		const tempUser = await User.findOne({
+			where: {
+				id: req.body.id,
+			},
+		});
+		if (!tempUser) {
+			return res.status(401).json('didnt find the user');
+		}
+
+		return res.status(200).json({
+			user: tempUser.toJSON(true),
+			access_token: tempUser.generateAccessToekn(),
+			refresh_token: tempUser.generateRefreshToekn(),
+		});
+	} catch (error) {
+		return res.status(500).json(error);
+	}
+};
+
+exports.logout = async (req, res, next) => {
+	try {
+		if (!req.body || !req.headers.authorization) {
+			return res.status(400);
+		}
+
+		const tempUser = await User.findOne({
+			where: {
+				id: req.user.id,
+			},
+		});
+		if (!tempUser) {
+			return res.status(500).json();
+		}
+		req.user.createTokensBlacklist({
+			token: req.headers.authorization.toString().split(' ')[1],
+		});
+		return res.status(200).json('done');
+	} catch (error) {
+		return res.status(500).json(error);
+	}
+};
+
+cron.schedule('0 0 0 * * *', async () => {
+	///24 cron to remove expired token TokensBlacklist
+	/// 7 days to the refresh token to be expired not the access token
+
+	try {
+		await TokensBlacklist.destroy({
+			where: {
+				createdAt: {
+					[Op.lte]: moment().subtract(8, 'days').toDate(),
+				},
+			},
+		});
+	} catch (error) {
+		console.log(error);
+	}
+});
